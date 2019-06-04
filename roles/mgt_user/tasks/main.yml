@@ -1,0 +1,38 @@
+- name: pull source from gitlab
+  git:
+    repo: git@{{ git_url }}:kingold/mgt_user.git
+    dest: files/source/mgt_user
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: mgt_user
+- name: override mgt_user conf file
+  shell: chdir=. rsync roles/mgt_user/files/application.properties files/source/mgt_user/
+  delegate_to: localhost
+  run_once: true
+  when: mgt_user|changed
+- name: package mgt_user
+  shell: chdir=files/source/mgt_user mvn clean package -Pprod 
+  delegate_to: localhost
+  run_once: true
+  when: mgt_user|changed
+- name: push supervisor configuration
+  template: src=mgt_user.conf dest=/etc/supervisor/conf.d
+  become: yes
+  notify:
+    - restart supervisor
+- name: backup old file
+  shell: chdir=/home/{{ ansible_ssh_user }}/tomcat8/webapps rsync -az --delete ROOT.war ROOT.bak
+  when: mgt_user|changed
+- name: push mgt_user package
+  copy: src=source/mgt_user/target/{{ java.mgt_user.name }} dest=/home/{{ansible_ssh_user}}/tomcat8/webapps/ROOT.war
+  notify:
+    - restart mgt_user 
+  when: mgt_user|changed
+- name: give up all changes
+  shell: chdir=files/source/mgt_user git checkout . && git clean -xdf
+  delegate_to: localhost
+  run_once: true
+  when: mgt_user|changed
+- include: tasks/log/log_tomcat8.yml
+  when: init_1st

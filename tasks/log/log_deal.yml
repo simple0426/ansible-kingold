@@ -1,0 +1,8 @@
+- name: mkdir in rsync server
+  file: path=/home/zj-ops/pre_logs/project/{{ project }} state=directory
+  delegate_to: '{{ log_server }}'
+  run_once: true
+- name: add rsync {{ project }} log
+  cron: name="rsync {{ project }} log" job="/usr/bin/rsync -avzP /tmp/{{ project }}* rsync_backup@{{ log_server }}::project/{{ project }}/{{ inventory_hostname }}/ --password-file=/etc/rsync.password"
+- name: add delete {{ project }} log 
+  cron: name="delete {{ project }} log" minute=0 hour=2 job="find /tmp/* -type f -name \"{{ project }}*\" -mtime +20|xargs -i rm -f {}"

@@ -1,0 +1,38 @@
+- name: pull source from gitlab
+  git:
+    repo: git@{{ git_url }}:cop/mgt_cop_user.git
+    dest: files/source/mgt_cop_user
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: mgt_cop_user
+- name: override mgt_cop_user conf file
+  shell: chdir=. rsync roles/mgt_cop_user/files/application.properties files/source/mgt_cop_user/
+  delegate_to: localhost
+  run_once: true
+  when: mgt_cop_user|changed
+- name: package mgt_cop_user
+  shell: chdir=files/source/mgt_cop_user mvn clean package -Pprod 
+  delegate_to: localhost
+  run_once: true
+  when: mgt_cop_user|changed
+- name: push supervisor configuration
+  template: src=mgt_cop_user.conf dest=/etc/supervisor/conf.d
+  become: yes
+  notify:
+    - restart supervisor
+- name: backup old file
+  shell: chdir=/home/{{ ansible_ssh_user }}/tomcat8/webapps rsync -az --delete ROOT.war ROOT.bak
+  when: mgt_cop_user|changed
+- name: push mgt_cop_user package
+  copy: src=source/mgt_cop_user/target/{{ java.mgt_cop_user.name }} dest=/home/{{ansible_ssh_user}}/tomcat8/webapps/ROOT.war
+  notify:
+    - restart mgt_cop_user
+  when: mgt_cop_user|changed
+- name: give up all changes
+  shell: chdir=files/source/mgt_cop_user git checkout . && git clean -xdf
+  delegate_to: localhost
+  run_once: true
+  when: mgt_cop_user|changed
+- include: tasks/log/log_tomcat8.yml
+  when: init_1st

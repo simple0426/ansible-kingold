@@ -1,0 +1,33 @@
+---
+unipass: 1234567890
+init_1st: false
+git_url: 10.10.10.164
+env: pre
+branch: master
+rollback: false
+log_server: 172.17.20.12
+dns_server: 172.17.134.53
+web_dir: /usr/local/nginx12
+key_file: preonline
+micro_srv:
+ - 172.17.134.98
+ - 172.17.134.99
+grp:
+  pjsrv:
+    grpname: pjsrv
+    grpuser: zj-pj
+  javaop:
+    grpname: mgtop
+    grpuser: zj-op
+  web:
+    grpname: webserver
+    grpuser: zj-web
+  db:
+    grpname: dbserver
+    grpuser: zj-db
+  midware:
+    grpname: midware
+    grpuser: zj-mid
+  nodejs:
+    grpname: nodejs
+    grpuser: zj-node

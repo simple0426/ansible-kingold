@@ -1,0 +1,74 @@
+################ mkdir on localhost#########################
+- name: init dir 
+  file: path=files/{{ env }}/wechat_wm state=directory
+  delegate_to: localhost
+################ kingold_vue ###################################
+- name: pull kingold_vue from gitlab
+  git:
+    repo: git@{{ git_url }}:kingold_app/kingold_vue.git
+    dest: files/{{ env }}/kingold_vue
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: kingold_vue
+- name: copy dist to wechat_wm vue
+  shell: chdir=files/{{ env }} rsync -az kingold_vue/dist wechat_wm/wm-vue/
+  delegate_to: localhost
+  run_once: true
+  when: kingold_vue|changed
+- name: copy html to wechat_wm vue
+  shell: chdir=files/{{ env }} rsync -az kingold_vue/html/ wechat_wm/wm-vue/
+  delegate_to: localhost
+  run_once: true
+  when: kingold_vue|changed
+- name: copy html to wechat_wm jq
+  shell: chdir=files/{{ env }} rsync -az kingold_vue/html/ wechat_wm/wm-jq/
+  delegate_to: localhost
+  run_once: true
+  when: kingold_vue|changed
+########################### kingold_weixin ###########################
+- name: pull kingold_weixin from gitlab
+  git:
+    repo: git@{{ git_url }}:kingold_app/kingold_weixin.git
+    dest: files/{{ env }}/kingold_weixin
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: kingold_weixin
+- name: copy dis to wechat_wm jq
+  shell: chdir=files/{{ env }} rsync -az kingold_weixin/dist/ wechat_wm/wm-jq/
+  delegate_to: localhost
+  run_once: true
+  when: kingold_weixin|changed
+#################### h5-landing-page #################################
+- name: pull h5-landing-page from gitlab
+  git:
+    repo: git@{{ git_url }}:kingold_app/h5-landing-page.git
+    dest: files/{{ env }}/h5-landing-page
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: h5_landing_page
+- name: copy h5-landing-page land to wechat_wm jq
+  shell: chdir=files/{{ env }} rsync -az h5-landing-page/land wechat_wm/wm-jq/
+  delegate_to: localhost
+  run_once: true
+  when: h5_landing_page|changed
+- name: copy h5-landing-page html to wechat_wm jq
+  shell: chdir=files/{{ env }} rsync -az h5-landing-page/html/ wechat_wm/wm-jq/
+  delegate_to: localhost
+  run_once: true
+  when: h5_landing_page|changed
+################## package wechat_wm directory ##########################
+- name: tar wechat_wm package
+  shell: chdir=files/{{ env }} tar czf wechat_wm.tar.gz wechat_wm
+  delegate_to: localhost
+  run_once: true
+  when: kingold_vue|changed or h5_landing_page|changed or kingold_weixin|changed
+- name: backup old file
+  shell: chdir={{ web_dir }} rsync -az --delete wechat_wm/ wechat_wm.bak/
+  when: kingold_vue|changed or h5_landing_page|changed or kingold_weixin|changed
+  become: yes
+- name: unarchive wechat_wm package
+  unarchive: src={{ env }}/wechat_wm.tar.gz dest={{ web_dir }}
+  when: kingold_vue|changed or h5_landing_page|changed or kingold_weixin|changed

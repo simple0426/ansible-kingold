@@ -1,0 +1,207 @@
+global
+        log 127.0.0.1 local0 info
+        user haproxy
+        group haproxy 
+        daemon
+        nbproc 1
+        maxconn 4096 
+        chroot /var/lib/haproxy
+        stats socket /var/run/haproxy.sock mode 600 level admin
+        stats timeout 2m
+#####################默认的全局设置######################
+defaults
+        mode http
+        log 127.0.0.1 local0 info
+        option httplog
+        option abortonclose
+        option dontlognull
+        option httpclose
+        option redispatch
+        option forwardfor
+        retries 3
+        contimeout 5000
+        clitimeout 50000
+        srvtimeout 50000
+        timeout check 2000
+        balance roundrobin
+####################监控页面的设置#######################
+listen stats
+        bind 0.0.0.0:20080
+        mode http
+        log global
+        stats refresh 30s
+        stats uri /haproxy
+        stats realm Haproxy statistic
+        stats auth haproxy:password
+        stats hide-version
+########frontend配置########################################## 
+frontend interface_app-6610
+        bind 0.0.0.0:6610
+        default_backend interface_app
+frontend interface_wechat-6620
+        bind 0.0.0.0:6620
+        default_backend interface_wechat
+frontend interface_wechat_wm-6720
+        bind 0.0.0.0:6720
+        default_backend interface_wechat_wm
+frontend interface_notify-6630
+        bind 0.0.0.0:6630
+        default_backend interface_notify
+frontend interface_issuer-6640
+        bind 0.0.0.0:6640
+        default_backend interface_issuer
+frontend interface_ifa-6650
+        bind 0.0.0.0:6650
+        default_backend interface_ifa
+frontend interface_campaign-6660
+        bind 0.0.0.0:6660
+        default_backend interface_campaign
+frontend open_api-2610
+        bind 0.0.0.0:2610
+        default_backend open_api
+frontend interface_open-2620
+        bind 0.0.0.0:2620
+        default_backend interface_open
+frontend service_user-8050
+        bind 0.0.0.0:8050
+        default_backend service_user
+frontend service_trade-8051
+        bind 0.0.0.0:8051
+        default_backend service_trade
+frontend service_product-8820
+        bind 0.0.0.0:8820
+        default_backend service_product
+frontend service_base-8810
+        bind 0.0.0.0:8810
+        default_backend service_base
+frontend service_organization-8061
+        bind 0.0.0.0:8061
+        default_backend service_organization
+frontend service_market-8056
+        bind 0.0.0.0:8056
+        default_backend service_market
+frontend service_marketinfo-8063
+        bind 0.0.0.0:8063
+        default_backend service_marketinfo
+frontend service_ifa-8110
+        bind 0.0.0.0:8110
+        default_backend service_ifa
+frontend service_pfo-8058
+        bind 0.0.0.0:8058
+        default_backend service_pfo
+frontend service_campaign-8062
+        bind 0.0.0.0:8062
+        default_backend service_campaign
+frontend service_advisor-8059
+        bind 0.0.0.0:8059
+        default_backend service_advisor
+frontend service_reward-8057
+        bind 0.0.0.0:8057
+        default_backend service_reward
+frontend service_fund-8021
+        bind 0.0.0.0:8021
+        default_backend service_fund
+frontend framework-gateway-server-10080
+        bind 0.0.0.0:10080
+        default_backend framework-gateway-server
+frontend service_coin-8067
+        bind 0.0.0.0:8067
+        default_backend service_coin
+####################backend的设置################# 
+backend service_coin
+        cookie SERVERID
+        server 172.17.134.71 172.17.134.71:8067 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.95 172.17.134.95:8067 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend framework-gateway-server 
+        cookie SERVERID
+        server 172.17.134.98 172.17.134.98:10080 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.99 172.17.134.99:10080 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_marketinfo
+        cookie SERVERID
+        server 172.17.134.60 172.17.134.60:8063 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.69 172.17.134.69:8063 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_reward
+        cookie SERVERID
+        server 172.17.134.60  172.17.134.60:8057 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.69  172.17.134.69:8057 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_fund
+        cookie SERVERID
+        server 172.17.134.62  172.17.134.62:8021 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65  172.17.134.65:8021 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_advisor
+        cookie SERVERID
+        server 172.17.134.60  172.17.134.60:8059 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.69  172.17.134.69:8059 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_pfo
+        cookie SERVERID
+        server 172.17.134.60  172.17.134.60:8058 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.69  172.17.134.69:8058 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_campaign
+        cookie SERVERID
+        server 172.17.134.60  172.17.134.60:8062 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.69  172.17.134.69:8062 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_open
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:2620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:2620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend open_api
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:2610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:2610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_ifa
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:6650 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:6650 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_campaign
+        cookie SERVERID
+        server 172.17.134.57 172.17.134.57:6660 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.61 172.17.134.61:6660 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_app
+        cookie SERVERID
+        server 172.17.134.58 172.17.134.58:6610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.63 172.17.134.63:6610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_issuer
+        cookie SERVERID
+        server 172.17.134.57 172.17.134.57:6640 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.61 172.17.134.61:6640 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_wechat
+        cookie SERVERID
+        server 172.17.134.57 172.17.134.57:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.61 172.17.134.61:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_wechat_wm
+        cookie SERVERID
+        server 172.17.134.58 172.17.134.58:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.63 172.17.134.63:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_notify
+        cookie SERVERID
+        server 172.17.134.58 172.17.134.58:6630 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.63 172.17.134.63:6630 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_ifa
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:8110 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:8110 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_user
+        cookie SERVERID
+        server 172.17.134.58 172.17.134.58:8050 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.63 172.17.134.63:8050 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_trade
+        cookie SERVERID
+        server 172.17.134.58 172.17.134.58:8051 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.63 172.17.134.63:8051 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_market
+        cookie SERVERID
+        server 172.17.134.61 172.17.134.61:8056 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.57 172.17.134.57:8056 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_product
+        cookie SERVERID
+        server 172.17.134.57 172.17.134.57:8820 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.61 172.17.134.61:8820 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_base
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:8810 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:8810 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_organization
+        cookie SERVERID
+        server 172.17.134.62 172.17.134.62:8061 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.134.65 172.17.134.65:8061 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+

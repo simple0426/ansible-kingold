@@ -1,0 +1,50 @@
+[all:vars]
+ansible_ssh_pass={{ unipass }}
+
+[nodejs]
+172.17.8.19
+[nodejs:vars]
+ansible_ssh_user={{ grp.nodejs.grpuser }}
+
+[midware]
+172.17.12.29
+[midware:vars]
+ansible_ssh_user={{ grp.midware.grpuser }}
+
+[webserver]
+172.17.4.[10:12]
+172.17.134.6
+172.17.134.5
+[webserver:vars]
+ansible_ssh_user={{ grp.web.grpuser }}
+
+[pythonserver]
+172.17.8.[10:18]
+[pythonserver:vars]
+ansible_ssh_user={{ grp.python.grpuser }}
+
+[javaserver]
+172.17.12.[10:19]
+172.17.12.2[4:5]
+172.17.12.2[7:8]
+172.17.12.2[0:2]
+172.17.12.4[0:2]
+[javaserver:vars]
+ansible_ssh_user={{ grp.java.grpuser }}
+
+[opserver]
+172.17.20.[10:13]
+[opserver:vars]
+ansible_ssh_user={{ grp.ops.grpuser }}
+
+[dbserver]
+172.17.16.10
+172.17.134.3
+[dbserver:vars]
+ansible_ssh_user={{ grp.db.grpuser }}
+
+[bigdata]
+172.17.20.[50:55]
+[bigdata:vars]
+ansible_ssh_user={{ grp.bigdata.grpuser }}
+

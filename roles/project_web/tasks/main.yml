@@ -1,0 +1,37 @@
+- name: pull {{ project }} from gitlab
+  git:
+    repo: git@{{ git_url }}:{{ group }}/{{ project }}.git
+    dest: files/{{ env }}/{{ project }}
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: change
+- name: tar {{ project }} package
+  shell: chdir=files/{{ env }} tar czf {{ project }}.tar.gz {{ project }}/dist {{ project }}/html
+  delegate_to: localhost
+  run_once: true
+  when: 
+    - change|changed
+    - project != 'kop'
+    - project != 'fop'
+- name: tar {{ project }} package
+  shell: chdir=files/{{ env }} tar czf {{ project }}.tar.gz {{ project }}/dist 
+  delegate_to: localhost
+  run_once: true
+  when: 
+    - change|changed
+    - project == 'fop'
+- name: tar {{ project }} package
+  shell: chdir=files/{{ env }} tar czf {{ project }}.tar.gz {{ project }}/dist {{ project }}/html {{ project }}/ueditor
+  delegate_to: localhost
+  run_once: true
+  when: 
+    - change|changed
+    - project == 'kop'
+- name: backup old file
+  shell: chdir={{ web_dir }} rsync -az --delete {{ project }}/ {{ project }}.bak/
+  when: change|changed
+  become: yes
+- name: unarchive {{ project }} package
+  unarchive: src={{ env }}/{{ project }}.tar.gz dest={{ web_dir }}
+  when: change|changed

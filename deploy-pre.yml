@@ -1,0 +1,206 @@
+---
+####################### double service #########################
+- name: deploy service in 172.17.134.58,172.17.134.63
+  hosts: 172.17.134.58,172.17.134.63
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml 
+      tags: ['service_user']
+      vars:  { project: service_user, project_port: 8050, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml 
+      tags: ['service_trade']
+      vars: { project: service_trade, project_port: 8051, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml 
+      tags: ['interface_app']
+      vars: { project: interface_app, project_port: 6610, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml 
+      tags: ['interface_notify']
+      vars: { project: interface_notify, project_port: 6630, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_wechat_wm']
+      vars: { project: interface_wechat_wm, project_port: 6620, start_sec: 5 }
+
+- name: deploy service in 172.17.134.61,172.17.134.57 
+  hosts: 172.17.134.61,172.17.134.57 
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_market']
+      vars: { project: service_market, project_port: 8056, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_product']
+      vars: { project: service_product, project_port: 8820, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_issuer']
+      vars: {project: interface_issuer, project_port: 6640, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_wechat']
+      vars: { project: interface_wechat, project_port: 6620, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_campaign']
+      vars: { project: interface_campaign, project_port: 6660, start_sec: 5 }
+
+- name: deploy service in 172.17.134.65,172.17.134.62
+  hosts: 172.17.134.65,172.17.134.62 
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_ifa']
+      vars: { project: service_ifa, project_port: 8110, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_base']
+      vars: { project: service_base, project_port: 8810, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_organization']
+      vars: { project: service_organization, project_port: 8061, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_fund']
+      vars: { project: service_fund, project_port: 8021, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_ifa']
+      vars: { project: interface_ifa, project_port: 6650, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['open_api']
+      vars: { project: open_api, project_port: 2610, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['interface_open']
+      vars: { project: interface_open, project_port: 2620, start_sec: 5 }
+
+- name: deploy service in 172.17.134.60,172.17.134.69
+  hosts: 172.17.134.60,172.17.134.69 
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_advisor']
+      vars: { project: service_advisor, project_port: 8059, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_pfo']
+      vars: { project: service_pfo, project_port: 8058, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_reward']
+      vars: { project: service_reward, project_port: 8057, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_campaign']
+      vars: { project: service_campaign, project_port: 8062, start_sec: 5 }
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_marketinfo']
+      vars: { project: service_marketinfo, project_port: 8063, start_sec: 5 }
+
+- name: deploy service in 172.17.134.98,172.17.134.99
+  hosts: 172.17.134.98,172.17.134.99
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml
+      tags: ['framework-gateway-server']
+      vars: { project: framework-gateway-server, project_port: 10080, start_sec: 5 }
+
+- name: deploy service_coin
+  hosts: 172.17.134.71,172.17.134.95
+  gather_facts: no
+  vars: { haproxy: 172.17.134.53, end_sec: 3 }
+  serial: 1
+  tasks:
+    - include: tasks/deploy/double_srv.yml
+      tags: ['service_coin']
+      vars: { project: service_coin, project_port: 8067, start_sec: 5 }
+###################### single service ##################################
+- name: rollback service in 172.17.134.71
+  hosts: 172.17.134.71
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/single_srv.yml
+      tags: ['service_sms']
+      vars: { project: service_sms, project_port: 8812 }
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_sms']
+      vars: { project: mgt_sms, project_port: 8813 }
+    - include: tasks/deploy/single_srv.yml
+      tags: ['fop_auth']
+      vars: { project: fop_auth, project_port: 8990 }
+
+- name: rollback service in 172.17.134.59
+  hosts: 172.17.134.59
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_operation']
+      vars: { project: mgt_operation, project_port: 8890 }
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_kop']
+      vars: { project: mgt_kop, project_port: 8891 }
+    - include: tasks/deploy/tomcat8.yml
+      tags: ['mgt_user']
+      vars: { project: mgt_user }
+
+- name: rollback service in 172.17.134.58
+  hosts: 172.17.134.58
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_channel']
+      vars: { project: mgt_channel, project_port: 8069 }
+
+- name: rollback service in 172.17.134.63
+  hosts: 172.17.134.63
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_fop']
+      vars: { project: mgt_fop, project_port: 8930}
+
+- name: deploy mgt_cop_user
+  hosts: 172.17.134.61
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/tomcat8.yml
+      tags: ['mgt_cop_user']
+      vars: { project: mgt_cop_user }
+
+- name: deploy mgt_cop
+  hosts: 172.17.134.57
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/single_srv.yml
+      tags: ['mgt_cop']
+      vars: { project: mgt_cop, project_port: 8079 }
+
+################## deploy front code ##############################
+- name: deploy front
+  hosts: 172.17.134.60
+  gather_facts: no
+  tasks:
+    - include: tasks/deploy/web_srv.yml
+      tags: ['cloud']
+      vars: { project: cloud }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['cloud-h5']
+      vars: { project: cloud-h5 }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['kingold-web']
+      vars: { project: kingold-web }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['kop']
+      vars: { project: kop }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['web-kingold']
+      vars: { project: web-kingold }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['wechat']
+      vars: { project: wechat }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['fop']
+      vars: { project: fop }
+    - include: tasks/deploy/web_srv.yml
+      tags: ['ifa']
+      vars: { project: ifa }
+

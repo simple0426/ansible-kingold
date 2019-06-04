@@ -1,0 +1,42 @@
+- name: pull interface_wechat_wm from gitlab
+  git:
+    repo: git@{{ git_url }}:{{ group }}/interface_wechat.git
+    dest: files/{{ env }}/interface_wechat_wm
+    version: '{{ version }}'
+  delegate_to: localhost
+  run_once: true
+  register: change
+- name: copy so to core
+  shell: chdir=. rsync {{ item }} files/{{ env }}/interface_wechat_wm/core/
+  delegate_to: localhost
+  run_once: true
+  with_fileglob:
+    - 'interface_wechat_wm/{{ env }}/*.so'
+  when: 
+    - change|changed 
+- name: archive interface_wechat_wm
+  shell: chdir=files/{{ env }} tar czf interface_wechat_wm.tar.gz interface_wechat_wm
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- name: copy interface_wechat_wm requirements
+  copy: src={{ env }}/interface_wechat_wm/requirement.txt dest=/tmp
+  notify:
+    - check requirements
+  when: init_1st and change|changed
+- name: push supervisor configuration
+  template: src=interface_wechat_wm.conf dest=/etc/supervisor/conf.d/interface_wechat_wm.conf
+  become: yes
+- name: backup old file
+  shell: chdir=/home/{{ ansible_ssh_user }} rsync -az --delete interface_wechat_wm/ interface_wechat_wm.bak/
+  when: change|changed
+- name: unarchive interface_wechat_wm
+  unarchive: src={{ env }}/interface_wechat_wm.tar.gz dest=/home/{{ ansible_ssh_user }}/
+  when: change|changed
+- name: give up all changes
+  shell: chdir=files/{{ env }}/interface_wechat_wm git checkout . && git clean -xdf
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- include: tasks/log/log_python.yml
+  when: init_1st

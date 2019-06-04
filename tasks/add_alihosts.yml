@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: add name resolve
+      blockinfile:
+        path: "/etc/hosts"
+        block: "{{ lookup('file', './aliyun_hosts') }}"
+#        state: absent

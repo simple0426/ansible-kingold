@@ -1,0 +1,22 @@
+- name: rollback package
+  shell: chdir=/home/{{ ansible_ssh_user }} rsync -az --delete {{ project }}.bak/ {{ project }}/
+  when: rollback
+- name: disable {{ project }} in haproxy
+  haproxy: state=drain backend='{{ project }}' host='{{ inventory_hostname }}' socket=/var/run/haproxy.sock 
+  delegate_to: '{{ haproxy }}'
+  become: yes
+- name: wait {{ project }} port drain
+  ignore_errors: True
+  wait_for: 
+    host: '{{ inventory_hostname }}' 
+    port: '{{ project_port }}' 
+    state: drained 
+    timeout: 180 
+    delay: '{{ end_sec }}' 
+    exclude_hosts: '{{ micro_srv }}'
+- name: restart supervisor
+  shell: supervisorctl update
+  become: yes
+- name: stop {{ project }} service
+  shell: supervisorctl stop '{{ project }}'
+  become: yes

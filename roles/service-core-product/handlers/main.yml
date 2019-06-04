@@ -1,0 +1,6 @@
+- name: restart supervisor
+  shell: supervisorctl update
+  become: yes
+- name: restart service-core-product
+  shell: supervisorctl restart service-core-product
+  become: yes

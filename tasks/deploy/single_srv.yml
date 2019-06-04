@@ -1,0 +1,11 @@
+- name: rollback package
+  shell: chdir=/home/{{ ansible_ssh_user }} rsync -az --delete {{ project }}.bak/ {{ project }}/
+  when: rollback
+- name: restart supervisor
+  shell: supervisorctl update
+  become: yes
+- name: restart {{ project }} service
+  shell: supervisorctl restart '{{ project }}'
+  become: yes
+- name: delete bad dir
+  shell: find /tmp/* -maxdepth 0 -type d -name "*.{{ project_port }}" -mtime +1|xargs -i rm -rf {}

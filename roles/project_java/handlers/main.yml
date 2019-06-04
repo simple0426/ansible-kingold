@@ -1,0 +1,3 @@
+- name: restart supervisor
+  shell: supervisorctl update
+  become: yes

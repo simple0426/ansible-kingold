@@ -1,0 +1,11 @@
+roles/*/files/*.tar
+roles/*/files/*.jar
+roles/*/files/*.war
+roles/*/files/*.tar.gz
+roles/*/files/*.tgz
+files/project
+files/source
+files/pre
+files/prod
+ansible.log
+roles/nginx_conf/files/*/*.tar.gz

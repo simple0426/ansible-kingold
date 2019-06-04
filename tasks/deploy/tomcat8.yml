@@ -1,0 +1,9 @@
+- name: rollback package
+  shell: chdir=/home/{{ ansible_ssh_user }}/tomcat8/webapps rsync -az --delete ROOT.bak ROOT.war
+  when: rollback
+- name: restart {{ project }} service
+  shell: supervisorctl restart '{{ project }}'
+  when: rollback
+  become: yes
+
+

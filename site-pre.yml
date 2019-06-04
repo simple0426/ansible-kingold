@@ -1,0 +1,157 @@
+---
+####################### double service #########################
+- name: deploy user|trade|app|notify
+  hosts: 172.17.134.58,172.17.134.63
+  gather_facts: no
+  vars:
+    - group: kingold
+    - thread_count: 4
+  roles:
+    - { role: project_java, tags: ['service_user'], project: service_user, jar_code: service_user-1.0.jar}
+    - { role: project_java, tags: ['service_trade'], project: service_trade, jar_code: service_trade-1.0.jar}
+    - { role: project_python, tags: ['interface_app'], project: interface_app, project_port: 6610, module: app_portal, log: kingold-app }
+    - { role: project_python, tags: ['interface_notify'], project: interface_notify, project_port: 6630, module: notify_portal, log: kingold-notify}
+    - { role: interface_wechat_wm, tags: ['interface_wechat_wm'], project: interface_wechat_wm, project_port: 6620, module: wechat_portal, log: kingold-wechat}
+
+- name: deploy product|base|org
+  hosts: 172.17.134.61,172.17.134.57 
+  gather_facts: no
+  vars:
+    - group: kingold
+    - thread_count: 4
+  roles:
+    - { role: project_python, tags: ['interface_campaign'], project: interface_campaign, project_port: 6660, module: campaign_portal}
+    - { role: project_java, tags: ['service_market'], project: service_market, jar_code: service_market-1.0.jar}
+    - { role: project_java, tags: ['service_product'], project: service_product, jar_code: service_product-1.0.0.jar}
+    - { role: project_python, tags: ['interface_issuer'], project: interface_issuer, project_port: 6640, module: web_portal, log: kingold-issuer}
+    - { role: project_python, tags: ['interface_wechat'], project: interface_wechat, project_port: 6620, module: wechat_portal, log: kingold-wechat}
+
+- name: deploy service_ifa
+  hosts: 172.17.134.65,172.17.134.62 
+  gather_facts: no
+  vars:
+    - group: kingold
+    - thread_count: 4
+  roles:
+    - { role: project_java, tags: ['service_ifa'], project: service_ifa, group: ifa, jar_code: service_ifa-1.0.jar}
+    - { role: project_java, tags: ['service_base'], project: service_base, jar_code: service_base-1.0.0.jar}
+    - { role: project_java, tags: ['service_organization'], project: service_organization, jar_code: service_organization-1.0.0.jar}
+    - { role: project_java, tags: ['service_fund'], project: service_fund, jar_code: service_fund-1.0.0.jar}
+    - { role: project_python, tags: ['interface_ifa'], group: ifa, project: interface_ifa, project_port: 6650, module: wechat_portal}
+    - { role: project_python, tags: ['open_api'], project: open_api, project_port: 2610, module: app_portal}
+    - { role: project_python, tags: ['interface_open'], project: interface_open, project_port: 2620, module: app_portal}
+
+- name: deploy service_advisor
+  hosts: 172.17.134.60,172.17.134.69 
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+    - { role: project_java, tags: ['service_advisor'], project: service_advisor, jar_code: service_advisor-1.0.jar}
+    - { role: project_java, tags: ['service_pfo'], project: service_pfo, jar_code: service_pfo-1.0.jar}
+    - { role: project_java, tags: ['service_reward'], project: service_reward, jar_code: service_reward-1.0.jar}
+    - { role: project_java, tags: ['service_campaign'], project: service_campaign, jar_code: service_campaign-1.0.0.jar}
+    - { role: project_java, tags: ['service_marketinfo'], project: service_marketinfo, jar_code: service_marketinfo-1.0.0.jar}
+
+- name: deploy service_coin
+  hosts: 172.17.134.71,172.17.134.95
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+        - { role: project_java, tags: ['service_coin'], project: service_coin, jar_code: service_coin-1.0.0.jar}
+
+###################### single service ##################################
+- name: deploy mgt_sms and service_sms
+  hosts: 172.17.134.71
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+    - { role: project_java, tags: ['service_sms'], project: service_sms, jar_code: service_sms-1.0.0.jar}
+    - { role: project_java, tags: ['mgt_sms'], project: mgt_sms, log: interface_sms, jar_code: interface_sms-1.0.0.jar}
+    - { role: project_java, tags: ['fop_auth'], project: fop_auth, group: ifa, jar_code: fop_auth-1.0.0.jar}
+
+- name: deploy operation and user
+  hosts: 172.17.134.59
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+    - { role: project_java, tags: ['mgt_operation'], project: mgt_operation, jar_code: mgt_operation-1.0.0.war}
+    - { role: mgt_user, tags: ['mgt_user'], project: mgt_user}
+    - { role: project_java, tags: ['mgt_kop'], project: mgt_kop, jar_code: mgt_kop-1.0.0.jar}
+#    - { role: nginx_conf, tags: ['59nginx']}
+
+- name: deploy mgt_channel 
+  hosts: 172.17.134.58
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+    - { role: project_java, tags: ['mgt_channel'], project: mgt_channel, jar_code: mgt_channel-1.0.0.war}
+
+- name: deploy mgt_fop
+  hosts: 172.17.134.63
+  gather_facts: no
+  roles:
+    - { role: project_java, tags: ['mgt_fop'], project: mgt_fop, group: ifa, jar_code: mgt_fop-1.0.0.jar}
+
+- name: deploy mgt_cop_user
+  hosts: 172.17.134.61
+  gather_facts: no
+  roles:
+    - { role: mgt_cop_user, tags: ['mgt_cop_user'], project: mgt_cop_user}
+
+- name: deploy mgt_cop
+  hosts: 172.17.134.57
+  gather_facts: no
+  vars:
+    - group: kingold
+  roles:
+    - { role: project_java, tags: ['mgt_cop'], project: mgt_cop, jar_code: mgt_cop-1.0.0.jar}
+
+- name: deploy haproxy
+  hosts: 172.17.134.53
+  gather_facts: no
+  roles:
+    - { role: haproxy, tags: ['haproxy']}
+
+################## deploy front code ##############################
+- name: deploy front
+  hosts: 172.17.134.60
+  gather_facts: no
+  vars:
+    - branch: stage
+    - group: kingold_app
+  roles:
+    - { role: project_web, tags: ['cloud'], project: cloud }
+    - { role: project_web, tags: ['cloud-h5'], project: cloud-h5}
+    - { role: project_web, tags: ['ifa'], project: ifa}
+    - { role: project_web, tags: ['kingold-web'], project: kingold-web}
+    - { role: project_web, tags: ['web-kingold'], project: web-kingold}
+    - { role: project_web, tags: ['kop'], project: kop}
+    - { role: project_web, tags: ['fop'], project: fop}
+    - { role: wechat, tags: ['wechat'] }
+    - { role: wechat_wm, tags: ['wechat_wm'], branch: wm-stage }
+    - { role: nginx_conf, tags: ['60nginx']}
+
+################### micro service ####################################
+- name: deploy in 172.17.134.98
+  hosts: 172.17.134.98,172.17.134.99
+  gather_facts: no
+  vars:
+    - group: kingold-cloud
+  roles:
+    - { role: java_project, project: framework-eureka-server, tags: ['framework-eureka-server'], jar_code: framework-eureka-server-1.0.0.jar }
+    - { role: java_project, project: framework-gateway-server, tags: ['framework-gateway-server'], jar_code: framework-gateway-server-1.0.0.jar }
+    - { role: service-core-product, project: service-core-product, tags: ['service-core-product'], jar_code: service-core-product-1.0.0.jar }
+
+- name: deploy in 172.17.134.98
+  hosts: 172.17.134.98
+  gather_facts: no
+  vars:
+    - group: kingold-cloud
+  roles:
+    - { role: java_project, project: framework-monitor-server, tags: ['framework-monitor-server'], jar_code: framework-monitor-server-1.0.0.jar }
+

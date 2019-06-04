@@ -1,0 +1,3 @@
+- name: restart nginx
+  shell: /home/{{ ansible_ssh_user }}/nginx/sbin/nginx -s reload
+  become: yes

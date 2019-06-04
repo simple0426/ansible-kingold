@@ -1,0 +1,4 @@
+- name: add rsync service_pay log
+  cron: name="rsync service_pay log" job="/usr/bin/rsync -avzP /tmp/service_pay* rsync_backup@{{ log_server }}::project/service_trade/{{ inventory_hostname }} --password-file=/etc/rsync.password"
+- name: add delete service_pay log
+  cron: name="delete service_pay log" minute=0 hour=2 job="find /tmp/* -type f -name \"service_pay*\" -mtime +20|xargs -i rm -f {}"

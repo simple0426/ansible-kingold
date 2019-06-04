@@ -1,0 +1,60 @@
+- name: pull {{ project }} from gitlab
+  git:
+    repo: git@{{ git_url }}:{{ group }}/{{ project }}.git
+    dest: files/{{ env }}/{{ project }}
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: change
+- name: override {{ project }} conf file
+  shell: chdir=. rsync {{ item }} files/{{ env }}/{{ project }}/src/main/resources/
+  delegate_to: localhost
+  run_once: true
+  with_fileglob:
+    - '{{ project }}/application-{{ env }}.yml'
+    - '{{ project }}/application-{{ env }}.yaml'
+    - '{{ project }}/application-{{ env }}.properties'
+  when: change|changed
+- include: service_base.yml
+  when: change|changed and project == 'service_base'
+- name: package {{ project }}
+  shell: chdir=files/{{ env }}/{{ project }} mvn clean package -Dmaven.test.skip=true
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- name: mkdir {{ project }}
+  file: path=/home/{{ ansible_ssh_user }}/{{ project }} state=directory
+  when: init_1st and change|changed
+- include: service_fund.yml
+  when: change|changed and project == 'service_fund'
+- name: push supervisor configuration
+  template: src=java_template.conf dest=/etc/supervisor/conf.d/{{ project }}.conf
+  become: yes
+  when: 
+    - project != 'service_trade' 
+    - project != 'mgt_operation' 
+- name: push service_trade supervisor configuration
+  template: src=service_trade.conf dest=/etc/supervisor/conf.d
+  become: yes
+  when: project == 'service_trade'
+- name: push mgt_operation supervisor configuration
+  template: src=mgt_operation.conf dest=/etc/supervisor/conf.d
+  become: yes
+  when: project == 'mgt_operation'
+- name: backup old file
+  shell: chdir=/home/{{ ansible_ssh_user }} rsync -az --delete {{ project }}/ {{ project }}.bak/
+  when: change|changed
+- name: push {{ project }} package
+  copy: src={{ env }}/{{ project }}/target/{{ jar_code }} dest=/home/{{ ansible_ssh_user }}/{{ project }}
+  when: change|changed
+- name: give up all changes
+  shell: chdir=files/{{env }}/{{ project }} git checkout . && git clean -xdf
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- include: tasks/log/log_deal.yml
+  when: init_1st
+- include: tasks/log/log_pay.yml
+  when: 
+    - init_1st 
+    - project == 'service_trade'

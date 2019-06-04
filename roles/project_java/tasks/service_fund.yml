@@ -1,0 +1,12 @@
+- name: mkdir certs and ymbizfile
+  file: path=/home/{{ ansible_ssh_user }}/{{ project }}/{{ item }} state=directory
+  with_items:
+    - certs
+    - ymbizfile
+    - ymnoticefile
+  when: change|changed
+- name: push certs file to remote
+  copy: src={{ item }} dest=/home/{{ ansible_ssh_user }}/service_fund/certs
+  with_fileglob:
+    - '{{ project }}/{{ env }}/*.p12'
+  when: change|changed

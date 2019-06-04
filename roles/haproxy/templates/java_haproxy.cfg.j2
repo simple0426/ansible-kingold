@@ -1,0 +1,146 @@
+global
+        log 127.0.0.1 local0 info
+        user haproxy
+        group haproxy 
+        daemon
+        nbproc 1
+        maxconn 4096 
+        chroot /var/lib/haproxy
+        stats socket /var/run/haproxy.sock mode 600 level admin
+        stats timeout 2m
+
+#####################默认的全局设置######################
+defaults
+        mode http
+        log 127.0.0.1 local0 info
+        option httplog
+        option abortonclose
+        option dontlognull
+        option httpclose
+        option redispatch
+        option forwardfor
+        retries 3
+        contimeout 5000
+        clitimeout 50000
+        srvtimeout 50000
+        timeout check 2000
+        balance roundrobin
+
+####################监控页面的设置#######################
+listen stats
+        bind 0.0.0.0:20080
+        mode http
+        log global
+        stats refresh 30s
+        stats uri /haproxy
+        stats realm Haproxy statistic
+        stats auth haproxy:password
+        stats hide-version
+
+########frontend配置########################################## 
+frontend service_user-8050
+        bind 0.0.0.0:8050
+        default_backend service_user
+frontend service_trade-8051
+        bind 0.0.0.0:8051
+        default_backend service_trade
+frontend service_product-8820
+        bind 0.0.0.0:8820
+        default_backend service_product
+frontend service_base-8810
+        bind 0.0.0.0:8810
+        default_backend service_base
+frontend service_organization-8061
+        bind 0.0.0.0:8061
+        default_backend service_organization
+frontend service_market-8056
+        bind 0.0.0.0:8056
+        default_backend service_market
+frontend service_marketinfo-8063
+        bind 0.0.0.0:8063
+        default_backend service_marketinfo
+frontend service_ifa-8110
+        bind 0.0.0.0:8110
+        default_backend service_ifa
+frontend service_pfo-8058
+        bind 0.0.0.0:8058
+        default_backend service_pfo
+frontend service_campaign-8062
+        bind 0.0.0.0:8062
+        default_backend service_campaign
+frontend service_advisor-8059
+        bind 0.0.0.0:8059
+        default_backend service_advisor
+frontend service_reward-8057
+        bind 0.0.0.0:8057
+        default_backend service_reward
+frontend service_fund-8021
+        bind 0.0.0.0:8021
+        default_backend service_fund
+frontend framework-gateway-server-10080
+        bind 0.0.0.0:10080
+        default_backend framework-gateway-server
+frontend service_coin-8067
+        bind 0.0.0.0:8067
+        default_backend service_coin
+####################backend的设置################# 
+backend service_coin
+        cookie SERVERID
+        server 172.17.12.14 172.17.12.14:8067 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.15 172.17.12.15:8067 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend framework-gateway-server 
+        cookie SERVERID
+        server 172.17.12.20 172.17.12.20:10080 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.21 172.17.12.21:10080 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_reward
+        cookie SERVERID
+        server 172.17.12.16  172.17.12.16:8057 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.17  172.17.12.17:8057 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_fund
+        cookie SERVERID
+        server 172.17.12.18 172.17.12.18:8021 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.19 172.17.12.19:8021 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_advisor
+        cookie SERVERID
+        server 172.17.12.16  172.17.12.16:8059 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.17  172.17.12.17:8059 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_pfo
+        cookie SERVERID
+        server 172.17.12.16  172.17.12.16:8058 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.17  172.17.12.17:8058 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_campaign
+        cookie SERVERID
+        server 172.17.12.14  172.17.12.14:8062 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.15  172.17.12.15:8062 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_ifa
+        cookie SERVERID
+        server 172.17.12.14 172.17.12.14:8110 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.15 172.17.12.15:8110 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_user
+        cookie SERVERID
+        server 172.17.12.10 172.17.12.10:8050 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.12 172.17.12.12:8050 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_trade
+        cookie SERVERID
+        server 172.17.12.10 172.17.12.10:8051 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.12 172.17.12.12:8051 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_market
+        cookie SERVERID
+        server 172.17.12.10 172.17.12.10:8056 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.12 172.17.12.12:8056 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_marketinfo
+        cookie SERVERID
+        server 172.17.12.18 172.17.12.18:8063 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.19 172.17.12.19:8063 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_product
+        cookie SERVERID
+        server 172.17.12.11 172.17.12.11:8820 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.13 172.17.12.13:8820 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_base
+        cookie SERVERID
+        server 172.17.12.11 172.17.12.11:8810 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.13 172.17.12.13:8810 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend service_organization
+        cookie SERVERID
+        server 172.17.12.11 172.17.12.11:8061 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.12.13 172.17.12.13:8061 cookie 1 check inter 2000 rise 3  fall 3 weight 2

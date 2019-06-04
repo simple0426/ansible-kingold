@@ -1,0 +1,3 @@
+- name: change dns
+  shell: resolvconf -u
+  become: yes

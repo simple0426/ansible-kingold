@@ -1,0 +1,12 @@
+- name: restart supervisor
+  shell: supervisorctl update
+  become: yes
+- name: restart framework-eureka-server
+  shell: supervisorctl restart framework-eureka-server
+  become: yes
+- name: restart framework-gateway-server
+  shell: supervisorctl restart framework-gateway-server
+  become: yes
+- name: restart framework-monitor-server
+  shell: supervisorctl restart framework-monitor-server
+  become: yes

@@ -1,0 +1,105 @@
+global
+        log 127.0.0.1 local0 info
+        user haproxy
+        group haproxy 
+        daemon
+        nbproc 1
+        maxconn 4096 
+        chroot /var/lib/haproxy
+        stats socket /var/run/haproxy.sock mode 600 level admin
+        stats timeout 2m
+
+#####################默认的全局设置######################
+defaults
+        mode http
+        log 127.0.0.1 local0 info
+        option httplog
+        option abortonclose
+        option dontlognull
+        option httpclose
+        option redispatch
+        option forwardfor
+        retries 3
+        contimeout 5000
+        clitimeout 50000
+        srvtimeout 50000
+        timeout check 2000
+        balance roundrobin
+
+####################监控页面的设置#######################
+listen stats
+        bind 0.0.0.0:10080
+        mode http
+        log global
+        stats refresh 30s
+        stats uri /haproxy
+        stats realm Haproxy statistic
+        stats auth haproxy:password
+        stats hide-version
+
+########frontend配置########################################## 
+frontend interface_app-6610
+        bind 0.0.0.0:6610
+        default_backend interface_app
+frontend interface_wechat-6620
+        bind 0.0.0.0:6620
+        default_backend interface_wechat
+frontend interface_wechat_wm-6720
+        bind 0.0.0.0:6720
+        default_backend interface_wechat_wm
+frontend interface_notify-6630
+        bind 0.0.0.0:6630
+        default_backend interface_notify
+frontend interface_issuer-6640
+        bind 0.0.0.0:6640
+        default_backend interface_issuer
+frontend interface_ifa-6650
+        bind 0.0.0.0:6650
+        default_backend interface_ifa
+frontend interface_campaign-6660
+        bind 0.0.0.0:6660
+        default_backend interface_campaign
+frontend open_api-2610
+        bind 0.0.0.0:2610
+        default_backend open_api
+frontend interface_open-2620
+        bind 0.0.0.0:2620
+        default_backend interface_open
+####################backend的设置################# 
+backend interface_campaign
+        cookie SERVERID
+        server 172.17.8.11 172.17.8.11:6660 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.13 172.17.8.13:6660 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_open
+        cookie SERVERID
+        server 172.17.8.15 172.17.8.15:2620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.16 172.17.8.16:2620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend open_api
+        cookie SERVERID
+        server 172.17.8.15 172.17.8.15:2610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.16 172.17.8.16:2610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_ifa
+        cookie SERVERID
+        server 172.17.8.10 172.17.8.10:6650 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.12 172.17.8.12:6650 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_app
+        cookie SERVERID
+        server 172.17.8.10 172.17.8.10:6610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.12 172.17.8.12:6610 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_issuer
+        cookie SERVERID
+        server 172.17.8.10 172.17.8.10:6640 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.12 172.17.8.12:6640 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_wechat
+        cookie SERVERID
+        server 172.17.8.11 172.17.8.11:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.13 172.17.8.13:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_wechat_wm
+        cookie SERVERID
+        server 172.17.8.15 172.17.8.15:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.16 172.17.8.16:6620 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+backend interface_notify
+        cookie SERVERID
+        server 172.17.8.11 172.17.8.11:6630 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.13 172.17.8.13:6630 cookie 1 check inter 2000 rise 3  fall 3 weight 2
+        server 172.17.8.17 172.17.8.17:6630 cookie 1 check inter 2000 rise 3  fall 3 weight 10

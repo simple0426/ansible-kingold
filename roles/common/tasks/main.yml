@@ -1,0 +1,74 @@
+- name: show hostname
+  shell: echo {{ group_names[0] }}{{ inventory_hostname[-3:]|replace('.', '') }}
+  when: init_1st
+  register: hostnames
+- name: change hostname
+  lineinfile: path=/etc/hostname line="{{ hostnames.stdout }}"
+  when: init_1st
+  become: yes
+- name: change hostname runtime
+  shell: hostname {{ hostnames.stdout }}
+  when: init_1st
+  become: yes
+- name: change hosts
+  lineinfile: path=/etc/hosts line="127.0.0.1 {{ hostnames.stdout }}"
+  when: init_1st
+  become: yes
+- name: change default editor
+  shell: update-alternatives --set editor /usr/bin/vim.basic 
+  when: init_1st
+  become: yes
+- name: update repo
+  apt: update_cache=yes
+  when: init_1st
+  become: yes
+- name: install common software
+  apt: name={{ item }} state=present
+  become: yes
+  with_items:
+    - vim
+    - ntp
+    - htop
+    - tree
+    - lrzsz
+    - sysv-rc-conf
+    - unzip
+# change ulimit
+- name: change hard nofile
+  lineinfile: path=/etc/security/limits.conf state=present line="* soft nofile 65535"
+  become: yes
+- name: change soft nofile
+  lineinfile: path=/etc/security/limits.conf state=present line="* hard nofile 65535"
+  become: yes
+
+# use file to create swap partion
+- name: create empty file
+  shell: creates=/home/swapfile fallocate -l 4G /home/swapfile
+  become: yes
+- name: change mode for file
+  file: path=/home/swapfile mode=0600
+  become: yes
+- name: make file to swap format
+  shell: mkswap /home/swapfile
+  when: init_1st
+  become: yes
+- name: enable swap in fstab
+  lineinfile: path=/etc/fstab line="/home/swapfile none swap    sw              0       0"
+  become: yes
+- name: enable swap runtime
+  shell: swapon -a
+  when: init_1st
+  become: yes
+
+# change dns
+- name: add nameserver
+  template: src=tail dest=/etc/resolvconf/resolv.conf.d/tail 
+  become: yes
+  notify:
+    - change dns
+- name: add rsync.password
+  file: path=/etc/rsync.password owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} mode=0600 state=touch
+  become: yes
+- name: add content to rsync.password
+  lineinfile: path=/etc/rsync.password line="backup"
+  become: yes

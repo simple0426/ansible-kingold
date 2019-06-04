@@ -1,0 +1,3 @@
+nameserver {{ dns_server }}
+nameserver 100.100.2.136
+

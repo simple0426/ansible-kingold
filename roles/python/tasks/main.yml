@@ -1,0 +1,45 @@
+- name: install supervisor
+  apt: name=supervisor state=present
+  become: yes
+- name: start supervisor
+  service: name=supervisor state=started enabled=yes
+  become: yes
+- name: update repo
+  apt: update_cache=yes
+  when: init_1st
+  become: yes
+- name: install ubuntu packages
+  apt: name={{ item }} state=present
+  become: yes
+  with_items:
+    - python-pip
+    - python-httplib2
+    - python-dev
+    - git
+- name: upgrade pip
+  pip: name=pip state=latest
+  become: yes
+- name: easy_install python packages
+  easy_install: name={{ item }} state=latest
+  become: yes
+  with_items:
+    - pip
+    - redis
+    - flask-cli 
+- name: easy_install Flask-Cache
+  shell: easy_install Flask-Cache
+  when: init_1st
+  become: yes
+- name: install python packages
+  pip: name={{ item }} state=present
+  become: yes
+  with_items:
+    - tornado
+    - flask
+    - Flask-Cors
+    - gunicorn
+    - gevent
+    - flask-cli
+    - pycrypto
+    - python-kafka-logging
+

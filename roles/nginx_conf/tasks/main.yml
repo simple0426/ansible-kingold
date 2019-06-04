@@ -1,0 +1,23 @@
+- name: archive conf
+  shell: chdir=roles/nginx_conf/files/{{ inventory_hostname }} tar czf conf.tar.gz conf
+  delegate_to: localhost
+- name: backup conf files
+  shell: chdir=/usr/local/nginx12 rsync -az --delete conf conf.bak
+  become: yes
+- name: unarchive conf
+  unarchive: src={{ inventory_hostname }}/conf.tar.gz dest=/usr/local/nginx12
+  register: conf_change
+- name: check validate
+  shell: /usr/local/nginx12/sbin/nginx -t
+  register: validate
+  ignore_errors: True
+  become: yes
+  when: conf_change|changed
+- name: reload config
+  shell: /usr/local/nginx12/sbin/nginx -s reload 
+  when: validate|succeeded and conf_change|changed
+  become: yes
+- name: rollback config
+  shell: chdir=/usr/local/nginx12 rsync -az --delete conf.bak conf
+  when: validate|failed and conf_change|changed
+

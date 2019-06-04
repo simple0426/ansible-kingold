@@ -1,0 +1,21 @@
+---
+# 此playbook主要为添加证书登陆、禁止root登陆、变更用户密码
+#- hosts: 172.17.134.95
+- hosts: 172.17.12.42
+  handlers:
+    - name: restart ssh
+      service: name=ssh state=restarted
+      become: yes
+  tasks:
+    # allow keyfile login
+    - name: add pub file to host
+      authorized_key: user={{ ansible_ssh_user }} key="{{ lookup('file', '{{ playbook_dir }}/../files/keyfile/{{ key_file }}.pub')}}" state=present
+    - name: disable PermitRootLogin
+      lineinfile: path=/etc/ssh/sshd_config regexp="PermitRootLogin" line="PermitRootLogin no"
+      become: yes
+      notify:
+        - restart ssh
+    # change password if newpass is exist
+    - name: change password according to groupname
+      user: name={{ ansible_ssh_user }} password="{{ newpass|password_hash('sha512') }}" 
+      when: newpass is defined 

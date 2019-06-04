@@ -1,0 +1,13 @@
+- name: add quartz config files
+  shell: chdir=. rsync roles/project_java/files/{{ project }}/{{ env }}//quartz_{{ env }}.properties files/{{ env }}/{{ project }}/src/main/resources/
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- name: add baofu certs
+  shell: chdir=. rsync roles/project_java/files/{{ project }}/{{ env }}/{{ item }} files/{{ env }}/{{ project }}/src/main/resources/cert
+  delegate_to: localhost
+  run_once: true
+  with_items:
+    - baofu_pub.cer
+    - kingold_pri.pfx
+  when: change|changed

@@ -1,0 +1,40 @@
+---
+unipass: 1234567890
+init_1st: false
+git_url: 10.10.10.164
+env: prod
+branch: master
+rollback: false
+log_server: 172.17.20.13
+dns_server: 172.17.20.10
+web_dir: /usr/local/nginx12
+key_file: internal
+micro_srv:
+ - 172.17.12.20
+ - 172.17.12.21
+ - 172.17.12.22
+grp:
+  python:
+    grpname: pythonserver
+    grpuser: zj-python
+  java:
+    grpname: javaserver
+    grpuser: zj-java
+  web:
+    grpname: webserver
+    grpuser: zj-web
+  nodejs:
+    grpname: nodejs
+    grpuser: zj-node
+  ops:
+    grpname: opserver
+    grpuser: zj-ops
+  db:
+    grpname: dbserver
+    grpuser: zj-db
+  midware:
+    grpname: midware
+    grpuser: zj-mid
+  bigdata:
+    grpname: bigdata
+    grpuser: zj-bdata

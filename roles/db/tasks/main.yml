@@ -1,0 +1,57 @@
+- name: update repo
+  apt: update_cache=yes
+  become: yes
+- name: mkdir vendor
+  file: path=/home/{{ansible_ssh_user}}/vendor state=directory
+- name: download mysql file
+  get_url: url=http://172.17.20.13/mysql-server_5.7.17-1ubuntu14.04_amd64.deb-bundle.tar dest=/home/{{ansible_ssh_user}}/vendor
+  become: yes
+- name: untar mysql file
+  unarchive: src=/home/{{ansible_ssh_user}}/vendor/mysql-server_5.7.17-1ubuntu14.04_amd64.deb-bundle.tar dest=/home/{{ansible_ssh_user}}/vendor remote_src=yes
+  become: yes
+- name: install libaio1 and libmecab2
+  apt: name=libaio1 state=present
+  with_items:
+    - libaio1
+    - libmecab2
+  become: yes
+- name: install deb package
+  apt: deb=/home/{{ansible_ssh_user}}/vendor/{{ item }} 
+  become: yes
+  with_items:
+    - mysql-common_5.7.17-1ubuntu14.04_amd64.deb
+    - libmysqlclient20_5.7.17-1ubuntu14.04_amd64.deb
+    - libmysqlclient-dev_5.7.17-1ubuntu14.04_amd64.deb
+    - libmysqld-dev_5.7.17-1ubuntu14.04_amd64.deb
+    - mysql-community-client_5.7.17-1ubuntu14.04_amd64.deb
+    - mysql-client_5.7.17-1ubuntu14.04_amd64.deb
+    - mysql-community-source_5.7.17-1ubuntu14.04_amd64.deb
+    - mysql-community-server_5.7.17-1ubuntu14.04_amd64.deb
+
+# change data dir for mysql
+- name: stop mysql service
+  service: name=mysql state=stopped
+  become: yes
+- name: mkdir mysql data and log 
+  file: path=/home/{{ansible_ssh_user}}/mysql_home/{{ item }} state=directory owner=mysql group={{ ansible_ssh_user }} recurse=yes
+  with_items:
+    - data
+    - log
+  become: yes
+- name: copy data to new directory
+  shell: creates=/home/{{ansible_ssh_user}}/mysql_home/data/ibdata1  /bin/cp -R /var/lib/mysql/* /home/{{ansible_ssh_user}}/mysql_home/data
+  become: yes
+- name: set attributes for data
+  file: path=/home/{{ansible_ssh_user}}/mysql_home/{{ item }} owner=mysql recurse=yes state=directory
+  with_items:
+    - data
+    - log
+  become: yes
+- name: change apparmor
+  template: src=usr.sbin.mysqld dest=/etc/apparmor.d/usr.sbin.mysqld owner=root group=root mode=0644
+  notify: restart apparmor
+  become: yes
+- name: copy conf to remote
+  template: src=my.cnf dest=/etc/mysql/my.cnf owner=root group=root
+  notify: restart mysql
+  become: yes

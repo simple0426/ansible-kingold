@@ -1,0 +1,20 @@
+---
+- hosts: 172.17.134.95
+#- hosts: 172.17.12.18,172.17.12.19
+  vars:
+    - ansible_ssh_user: root
+    # test root password
+    - ansible_ssh_pass: 000000
+    # prod root password
+    #- ansible_ssh_pass: 111111
+  tasks:
+    - name: create user according to groupname
+      user: name={{ item.value.grpuser }} password="{{ unipass|password_hash('sha512') }}" shell=/bin/bash groups=sudo system=yes
+      with_dict: "{{ grp }}"
+      when: group_names[0] == item.value.grpname
+    - name: add user to sudo file
+      lineinfile: "dest=/etc/sudoers state=present line='{{ item.value.grpuser }} ALL=(ALL) NOPASSWD: ALL\nDefaults:{{ item.value.grpuser }} !requiretty' validate='visudo -cf %s'"
+      with_dict: "{{ grp }}"
+      when: group_names[0] == item.value.grpname
+    - name: disable env_reset
+      lineinfile: dest=/etc/sudoers regexp="^Defaults.*env_reset$" line="Defaults\t!env_reset"

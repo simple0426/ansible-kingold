@@ -1,0 +1,42 @@
+172.17.20.12 ansible_ssh_user=zj-ops ansible_ssh_pass=1234567890
+[all:vars]
+ansible_ssh_pass={{ unipass }}
+
+[webserver]
+172.17.134.60
+[webserver:vars]
+ansible_ssh_user={{ grp.web.grpuser }}
+
+[mgtop]
+172.17.134.59
+[mgtop:vars]
+ansible_ssh_user={{ grp.javaop.grpuser }}
+
+[pjsrv]
+172.17.134.58
+172.17.134.63
+172.17.134.61
+172.17.134.57
+172.17.134.65
+172.17.134.62
+172.17.134.71
+172.17.134.95
+172.17.134.98
+172.17.134.99
+[pjsrv:vars]
+ansible_ssh_user={{ grp.pjsrv.grpuser }}
+
+[midware]
+172.17.134.54
+[midware:vars]
+ansible_ssh_user={{ grp.midware.grpuser }}
+
+[dbserver]
+172.17.134.53
+[dbserver:vars]
+ansible_ssh_user={{ grp.db.grpuser }}
+
+[nodejs]
+172.17.134.69
+[nodejs:vars]
+ansible_ssh_user={{ grp.nodejs.grpuser }}

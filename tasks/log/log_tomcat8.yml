@@ -1,0 +1,6 @@
+- name: mkdir in rsync server
+  file: path=/home/zj-ops/pre_logs/project/{{ project }} state=directory
+  delegate_to: '{{ log_server }}'
+  run_once: true
+- name: add rsync {{ project }} log
+  cron: name="rsync {{ project }} log" job="/usr/bin/rsync -avzP /home/{{ ansible_ssh_user }}/tomcat8/logs/* rsync_backup@{{ log_server }}::project/{{ project }}/{{ inventory_hostname }}/ --password-file=/etc/rsync.password"

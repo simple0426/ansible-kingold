@@ -1,0 +1,47 @@
+- name: pull {{ project }} from gitlab
+  git:
+    repo: git@{{ git_url }}:{{ group }}/{{ project }}.git
+    dest: files/{{ env }}/{{ project }}
+    version: '{{ branch }}'
+  delegate_to: localhost
+  run_once: true
+  register: change
+- name: copy so to core
+  shell: chdir=. rsync {{ item }} files/{{ env }}/{{ project }}/core/
+  delegate_to: localhost
+  run_once: true
+  with_fileglob:
+    - '{{ project }}/{{ env }}/*.so'
+  when: 
+    - change|changed 
+    - project != 'interface_notify'
+    - project != 'open_api'
+    - project != 'open_h5'
+- name: archive {{ project }}
+  shell: chdir=files/{{ env }} tar czf {{ project }}.tar.gz {{ project }}
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+- name: copy {{ project }} requirements
+  copy: src={{ env }}/{{ project }}/requirement.txt dest=/tmp
+  notify:
+    - check requirements
+  when: init_1st and change|changed
+- name: push supervisor configuration
+  template: src=python_template.conf dest=/etc/supervisor/conf.d/{{ project }}.conf
+  become: yes
+- name: backup old file
+  shell: chdir=/home/{{ ansible_ssh_user }} rsync -az --delete {{ project }}/ {{ project }}.bak/
+  when: change|changed
+- name: unarchive {{ project }}
+  unarchive: src={{ env }}/{{ project }}.tar.gz dest=/home/{{ ansible_ssh_user }}/
+  when: change|changed
+- name: give up all changes
+  shell: chdir=files/{{ env }}/{{ project }} git checkout . && git clean -xdf
+  delegate_to: localhost
+  run_once: true
+  when: change|changed
+#- include: tasks/log/log_python.yml
+#  when: init_1st and log|defined
+#- include: tasks/log/log_deal.yml
+#  when: init_1st and (project == 'interface_ifa' or project == 'open_api' or project == 'open_h5' or project == 'interface_open')
